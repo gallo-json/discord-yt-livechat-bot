@@ -4,7 +4,8 @@
 import requests
 import json
 
-API_KEY = '[key]'
+bot_settings = json.load('bot_settings.json')
+API_KEY = bot_settings['YTAPI']
 channelID = 'UCxEgOKuI-n-WOJaNcisHvSg' # Random youtube channel that is currently broadcasting a youtube livestream
 
 

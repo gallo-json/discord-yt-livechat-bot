@@ -1,8 +1,8 @@
+/*
 const botSettings = require("./bot_settings.json");
 const Discord = require("discord.js")
 const client = new Discord.Client();
-
-var getLiveChatId = require('./getLiveChatId')
+*/
 
 var fs = require('fs');
 var readline = require('readline');
@@ -22,16 +22,10 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
     return;
   }
   // Authorize a client with the loaded credentials, then call the YouTube API.
-  authorize(JSON.parse(content), getLiveChat);
+  authorize(JSON.parse(content), getLiveChat, getActiveLiveChatId);
 });
 
-/**
- * Create an OAuth2 client with the given credentials, and then execute the
- * given callback function.
- *
- * @param {Object} credentials The authorization client credentials.
- * @param {function} callback The callback to call with the authorized client.
- */
+
 function authorize(credentials, callback) {
   var clientSecret = credentials.installed.client_secret;
   var clientId = credentials.installed.client_id;
@@ -49,14 +43,7 @@ function authorize(credentials, callback) {
   });
 }
 
-/**
- * Get and store new token after prompting for user authorization, and then
- * execute the given callback with the authorized OAuth2 client.
- *
- * @param {google.auth.OAuth2} oauth2Client The OAuth2 client to get token for.
- * @param {getEventsCallback} callback The callback to call with the authorized
- *     client.
- */
+
 function getNewToken(oauth2Client, callback) {
   var authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
@@ -81,11 +68,7 @@ function getNewToken(oauth2Client, callback) {
   });
 }
 
-/**
- * Store token to disk be used in later program executions.
- *
- * @param {Object} token The token to store to disk.
- */
+
 function storeToken(token) {
   try {
     fs.mkdirSync(TOKEN_DIR);
@@ -100,12 +83,36 @@ function storeToken(token) {
   });
 }
 
+function getActiveLiveChatId(auth) {
+  var service = google.youtube('v3');
+  service.videos.list({
+      auth: auth,
+      part: 'snippet,contentDetails,statistics,liveStreamingDetails',
+      id: 'EEIk7gwjgIM' // Random Livechat
+  }, function(err, getLiveChatId) {
+          if (err) {
+              console.log('The API returned an error: ' + err);
+              return;
+          }
+          var video = getLiveChatId.data.items;
+          var info = 'This videos ID is ' + video[0].id + ' Its title is ' + video[0].snippet.title + ' and it has ' + video[0].statistics.viewCount + 
+          ' views currenly. The number of likes are ' + video[0].statistics.likeCount + ' and the chat id is ' + video[0].liveStreamingDetails.activeLiveChatId;
+          if (video.length == 0) {
+              console.log('No channel found.');
+          } else {
+            console.log(info);
+            return video[0].liveStreamingDetails.activeLiveChatId;                    
+          }
+      });
+}
+
+
 function getLiveChat(auth) {
   var service = google.youtube('v3');
   service.liveChatMessages.list({
       auth: auth,
-      part: 'snippet,contentDetails,statistics,authorDetails',
-      liveChatId: getLiveChatId.getActiveLiveChatId(auth) // Random Livechat
+      part: 'snippet,contentDetails,statistics',
+      liveChatId: getActiveLiveChatId(auth) // Gives Error
   }, function(err, liveChat) {
           if (err) {
               console.log('The API returned an error: ' + err);
@@ -119,4 +126,3 @@ function getLiveChat(auth) {
           }
       });
 }
-
