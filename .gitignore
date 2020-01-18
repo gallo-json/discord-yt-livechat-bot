@@ -1,6 +1,6 @@
 # Packages
 package-lock.json
-/node-modules
+/node_modules
 
 # Secret
 bot_settings.json
