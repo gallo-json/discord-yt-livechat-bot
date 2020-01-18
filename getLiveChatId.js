@@ -1,3 +1,7 @@
+var fs = require('fs');
+var readline = require('readline');
+var {google} = require('googleapis');
+var OAuth2 = google.auth.OAuth2;
 /**
  * Lists the names and IDs of up to 10 files.
  *

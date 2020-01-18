@@ -2,7 +2,7 @@ const botSettings = require("./bot_settings.json");
 const Discord = require("discord.js")
 const client = new Discord.Client();
 
-var activeLiveChatId = require('./getLiveChatId')
+var getLiveChatId = require('./getLiveChatId')
 
 var fs = require('fs');
 var readline = require('readline');
@@ -105,7 +105,7 @@ function getLiveChat(auth) {
   service.liveChatMessages.list({
       auth: auth,
       part: 'snippet,contentDetails,statistics,authorDetails',
-      liveChatId: activeLiveChatId // Random Livechat
+      liveChatId: getLiveChatId.getActiveLiveChatId(auth) // Random Livechat
   }, function(err, liveChat) {
           if (err) {
               console.log('The API returned an error: ' + err);
