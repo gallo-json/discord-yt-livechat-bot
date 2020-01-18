@@ -1,0 +1,17 @@
+{
+  "name": "discord-yt-livechat-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Jose Gallo",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.5.1",
+    "google-auth-library": "^5.9.1",
+    "googleapis": "^47.0.0"
+  }
+}

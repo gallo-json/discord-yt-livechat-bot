@@ -1,0 +1,9 @@
+# Packages
+package-lock.json
+/node-modules
+
+# Secret
+bot_settings.json
+client_secret.json
+
+/.vscode
