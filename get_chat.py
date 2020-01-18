@@ -4,7 +4,7 @@
 import requests
 import json
 
-API_KEY = 'AIzaSyDlMaJmuTy3nTAw3E_I7SvOzPTqPFA0wyw'
+API_KEY = '[key]'
 channelID = 'UCxEgOKuI-n-WOJaNcisHvSg' # Random youtube channel that is currently broadcasting a youtube livestream
 
 
