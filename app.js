@@ -10,7 +10,6 @@ var {google} = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
 
 var SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
-// Change this dir later
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
 var TOKEN_PATH = TOKEN_DIR + 'discord-yt-livechat-bot.json';
@@ -22,8 +21,8 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
     return;
   }
   // Authorize a client with the loaded credentials, then call the YouTube API.
-  // is this right??
-  authorize(JSON.parse(content), getActiveLiveChatId, getLiveChat);
+  authorize(JSON.parse(content), getActiveLiveChatId);
+  authorize(JSON.parse(content), getLiveChat);
 });
 
 
@@ -105,21 +104,19 @@ async function getActiveLiveChatId(auth) {
 async function getLiveChat(auth) {
   var service = google.youtube('v3');
   service.liveChatMessages.list({
-      auth: auth,
-      part: 'snippet,contentDetails,statistics',
-      liveChatId: await getActiveLiveChatId(auth) // Gives Error
+    auth: auth,
+    part: 'snippet',
+    liveChatId: await getActiveLiveChatId(auth)
   }, function(err, liveChat) {
-    /*
-          if (err) {
-              console.log('The API returned an error: ' + err);
-              return;
-          }
-          */
-          var chat = liveChat.data.items;
-          if (chat.length == 0) {
-              console.log('No live chat found.');
-          } else {
-              console.log(chat);
-          }
-      });
+    if (err) {
+      console.log('The API returned an error: ' + err);
+      return;
+    }
+    var chat = liveChat.data.items;
+    if (chat.length == 0) {
+      console.log('No channel found.');
+    } else {
+      console.log(chat);
+    }
+  });
 }
