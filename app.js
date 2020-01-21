@@ -23,7 +23,7 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
   }
   // Authorize a client with the loaded credentials, then call the YouTube API.
   // is this right??
-  authorize(JSON.parse(content), getLiveChat(getActiveLiveChatId), getActiveLiveChatId);
+  authorize(JSON.parse(content), getActiveLiveChatId, getLiveChat);
 });
 
 
@@ -84,9 +84,9 @@ function storeToken(token) {
   });
 }
 
-function getActiveLiveChatId(auth) {
+async function getActiveLiveChatId(auth) {
   var service = google.youtube('v3');
-  var getLiveChatId = service.videos.list({
+  var getLiveChatId = await service.videos.list({
       auth: auth,
       part: 'snippet,contentDetails,statistics,liveStreamingDetails',
       id: 'EEIk7gwjgIM' // Random Livechat
@@ -102,14 +102,12 @@ function getActiveLiveChatId(auth) {
   }
 }
 
-
-
-function getLiveChat(chatId, auth) {
+async function getLiveChat(auth) {
   var service = google.youtube('v3');
   service.liveChatMessages.list({
       auth: auth,
       part: 'snippet,contentDetails,statistics',
-      liveChatId: chatId // Gives Error
+      liveChatId: await getActiveLiveChatId(auth) // Gives Error
   }, function(err, liveChat) {
     /*
           if (err) {
