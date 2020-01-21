@@ -22,7 +22,8 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
     return;
   }
   // Authorize a client with the loaded credentials, then call the YouTube API.
-  authorize(JSON.parse(content), getLiveChat, getActiveLiveChatId);
+  // is this right??
+  authorize(JSON.parse(content), getLiveChat(getActiveLiveChatId), getActiveLiveChatId);
 });
 
 
@@ -85,39 +86,37 @@ function storeToken(token) {
 
 function getActiveLiveChatId(auth) {
   var service = google.youtube('v3');
-  service.videos.list({
+  var getLiveChatId = service.videos.list({
       auth: auth,
       part: 'snippet,contentDetails,statistics,liveStreamingDetails',
       id: 'EEIk7gwjgIM' // Random Livechat
-  }, function(err, getLiveChatId) {
-          if (err) {
-              console.log('The API returned an error: ' + err);
-              return;
-          }
-          var video = getLiveChatId.data.items;
-          var info = 'This videos ID is ' + video[0].id + ' Its title is ' + video[0].snippet.title + ' and it has ' + video[0].statistics.viewCount + 
-          ' views currenly. The number of likes are ' + video[0].statistics.likeCount + ' and the chat id is ' + video[0].liveStreamingDetails.activeLiveChatId;
-          if (video.length == 0) {
-              console.log('No channel found.');
-          } else {
-            console.log(info);
-            return video[0].liveStreamingDetails.activeLiveChatId;                    
-          }
-      });
+  }).catch((err) => {console.log("error: "+err)});
+  var video = getLiveChatId.data.items;
+  var info = 'This videos ID is ' + video[0].id + ' Its title is ' + video[0].snippet.title + ' and it has ' + video[0].statistics.viewCount + 
+  ' views currenly. The number of likes are ' + video[0].statistics.likeCount + ' and the chat id is ' + video[0].liveStreamingDetails.activeLiveChatId;
+  if (video.length == 0) {
+    console.log('No channel found.');
+  } else {
+    console.log(info);
+    return video[0].liveStreamingDetails.activeLiveChatId;                    
+  }
 }
 
 
-function getLiveChat(auth) {
+
+function getLiveChat(chatId, auth) {
   var service = google.youtube('v3');
   service.liveChatMessages.list({
       auth: auth,
       part: 'snippet,contentDetails,statistics',
-      liveChatId: getActiveLiveChatId(auth) // Gives Error
+      liveChatId: chatId // Gives Error
   }, function(err, liveChat) {
+    /*
           if (err) {
               console.log('The API returned an error: ' + err);
               return;
           }
+          */
           var chat = liveChat.data.items;
           if (chat.length == 0) {
               console.log('No live chat found.');
