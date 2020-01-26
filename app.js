@@ -14,15 +14,22 @@ var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
 var TOKEN_PATH = TOKEN_DIR + 'discord-yt-livechat-bot.json';
 
+function sleep(millis) {
+  return new Promise(resolve => setTimeout(resolve, millis));
+}
+
 // Load client secrets from a local file (client_secret.json)
-fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+fs.readFile('client_secret.json', async function processClientSecrets(err, content) {
   if (err) {
     console.log('Error loading client secret file: ' + err);
     return;
   }
   // Authorize a client with the loaded credentials, then call the YouTube API.
   authorize(JSON.parse(content), getActiveLiveChatId);
-  authorize(JSON.parse(content), getLiveChat);
+  while (true) {
+    await sleep(5000);
+    authorize(JSON.parse(content), getLiveChat);
+  }
 });
 
 
@@ -89,14 +96,13 @@ async function getActiveLiveChatId(auth) {
       auth: auth,
       part: 'snippet,contentDetails,statistics,liveStreamingDetails',
       id: 'EEIk7gwjgIM' // Random Livechat
-  }).catch((err) => {console.log("error: "+err)});
+  }).catch((err) => {
+    console.log("error: "+err)
+  });
   var video = getLiveChatId.data.items;
-  var info = 'This videos ID is ' + video[0].id + ' Its title is ' + video[0].snippet.title + ' and it has ' + video[0].statistics.viewCount + 
-  ' views currenly. The number of likes are ' + video[0].statistics.likeCount + ' and the chat id is ' + video[0].liveStreamingDetails.activeLiveChatId;
   if (video.length == 0) {
     console.log('No channel found.');
   } else {
-    console.log(info);
     return video[0].liveStreamingDetails.activeLiveChatId;                    
   }
 }
@@ -116,7 +122,10 @@ async function getLiveChat(auth) {
     if (chat.length == 0) {
       console.log('No channel found.');
     } else {
-      console.log(chat);
-    }
+        // console.log(chat[chat.length-1]['snippet']['displayMessage']); WORKS!
+        for (var i = 0; i < chat.length; i++) {
+          console.log(chat[i]['snippet']['displayMessage'])
+        }
+      }
   });
 }

@@ -4,61 +4,59 @@
 import requests
 import json
 
-bot_settings = json.load('bot_settings.json')
-API_KEY = bot_settings['YTAPI']
+with open('bot_settings.json') as f:
+        bot_settings = json.load(f)
+
+API_KEY = bot_settings["YT_API"]
 channelID = 'UCxEgOKuI-n-WOJaNcisHvSg' # Random youtube channel that is currently broadcasting a youtube livestream
 
+try:
+        params = {
+                'part': 'id',
+                'key': API_KEY,
+                'channelId': channelID,
+                'eventType': 'live',
+                'type': 'video',
+                'order': 'viewCount',
+                'fields': 'items(id(videoId))'
+                }
 
-params = {
-        'part': 'id',
-        'key': API_KEY,
-        'channelId': channelID,
-        'eventType': 'live',
-        'type': 'video',
-        'order': 'viewCount',
-        'fields': 'items(id(videoId))'
-        }
+        url = 'https://www.googleapis.com/youtube/v3/search'
+        r = requests.get(url, headers=None, params=params).json()
 
-url = 'https://www.googleapis.com/youtube/v3/search'
-r = requests.get(url, headers=None, params=params).json()
+        # When all the quotas are used, no request possible
+        vID = r.get('items')[0]['id']['videoId'] # vID = r.get('items')[0].get('id').get('videoId')
 
-# vID = r.get('items')[0].get('id').get('videoId')
-vID = r.get('items')[0]['id']['videoId']
+        params = {
+                'part': 'liveStreamingDetails,statistics,snippet',
+                'key': API_KEY,
+                'id': vID,
+                'fields': 'items(id,liveStreamingDetails(activeLiveChatId,concurrentViewers,actualStartTime),' + \
+                        'snippet(channelId,channelTitle,description,liveBroadcastContent,publishedAt,thumbnails,title),statistics)'
+                }
 
-params = {
-        'part': 'liveStreamingDetails,statistics,snippet',
-        'key': API_KEY,
-        'id': vID,
-        'fields': 'items(id,liveStreamingDetails(activeLiveChatId,concurrentViewers,actualStartTime),' + \
-                  'snippet(channelId,channelTitle,description,liveBroadcastContent,publishedAt,thumbnails,title),statistics)'
-        }
-
-url = 'https://www.googleapis.com/youtube/v3/videos'
-r = requests.get(url, headers=None, params=params).json()
-
-
-streamData = dict(r.get('items')[0])
-
-chatID = streamData['liveStreamingDetails']['activeLiveChatId']
+        url = 'https://www.googleapis.com/youtube/v3/videos'
+        r = requests.get(url, headers=None, params=params).json()
 
 
-params = {
-        'part': 'snippet',
-        'key': API_KEY,
-        'liveChatId': chatID,
-        'maxResults': 2000
-        }
+        streamData = dict(r.get('items')[0])
 
-url = 'https://www.googleapis.com/youtube/v3/liveChat/messages'
+        chatID = streamData['liveStreamingDetails']['activeLiveChatId']
 
-def print_message():
-        try:
-                while True:
-                        messages = requests.get(url, headers=None, params=params).json()
-                        for i in range(len(messages['items'])):
-                                print(messages['items'][i]['snippet']['displayMessage'])
-        except KeyError or TypeError:
-                print('All your google quotas have been used!')
-                
 
-print_message()
+        params = {
+                'part': 'snippet',
+                'key': API_KEY,
+                'liveChatId': chatID,
+                'maxResults': 2000
+                }
+
+        url = 'https://www.googleapis.com/youtube/v3/liveChat/messages'
+
+        while True:
+                messages = requests.get(url, headers=None, params=params).json()
+                for i in range(len(messages['items'])):
+                        print(messages['items'][i]['snippet']['displayMessage'])
+
+except TypeError or KeyError:
+        print('All your google quotas have been used!')
