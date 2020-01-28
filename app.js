@@ -55,7 +55,6 @@ client.on('message', msg => {
       }
     });
 
-
     function authorize(credentials, callback) {
       var clientSecret = credentials.installed.client_secret;
       var clientId = credentials.installed.client_id;
@@ -72,7 +71,6 @@ client.on('message', msg => {
         }
       });
     }
-
 
     function getNewToken(oauth2Client, callback) {
       var authUrl = oauth2Client.generateAuthUrl({
@@ -98,7 +96,6 @@ client.on('message', msg => {
       });
     }
 
-
     function storeToken(token) {
       try {
         fs.mkdirSync(TOKEN_DIR);
@@ -115,7 +112,7 @@ client.on('message', msg => {
       var service = google.youtube('v3');
       var getLiveChatId = await service.videos.list({
           auth: auth,
-          part: 'snippet,contentDetails,statistics,liveStreamingDetails',
+          part: 'snippet,liveStreamingDetails',
           id: videoID // Random Livechat
       }).catch(() => {
         console.log('All your Google Quotas have been used for today! They renew at 12:00 PM PST (' + (24 - pst.getHours()) + ':' + pst.getMinutes() + ' hours left!)');
@@ -124,7 +121,11 @@ client.on('message', msg => {
       if (video.length == 0) {
         console.log('No video found.');
       } else {
-        return video[0].liveStreamingDetails.activeLiveChatId;                    
+        if (video[0].liveStreamingDetails.actualEndTime == null) { // If the livestream is still active
+          return video[0].liveStreamingDetails.activeLiveChatId; 
+        } else {
+          return;
+        }                  
       }
     }
 
@@ -143,9 +144,9 @@ client.on('message', msg => {
         if (chat.length == 0) {
           console.log('No livechat found.');
         } else {
-            if (chat[chat.length-1]['snippet']['displayMessage'] == keyword) {
+            if (chat[chat.length-1]['snippet']['displayMessage'].indexOf(keyword) != -1) {
               msg.reply(keyword + ' has been said in the chat!');
-            } else if (chat[chat.length-1]['snippet']['displayMessage'] == keyword2) {
+            } else if (chat[chat.length-1]['snippet']['displayMessage'].indexOf(keyword2) != -1) {
               msg.reply(keyword2 + ' has been said in the chat!');
             }
         }
@@ -156,4 +157,4 @@ client.on('message', msg => {
   }
 })
 
-client.login(botSettings.token)
+client.login(botSettings.token);
